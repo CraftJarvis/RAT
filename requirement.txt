@@ -1,5 +1,0 @@
-gradio
-openai
-langchain
-tiktoken
-html2text
