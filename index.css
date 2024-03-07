@@ -63,11 +63,13 @@ body {
 
 .publication-awards {
     color: #ff3860;
-    width: fit-content;
+    /* width: fit-content; */
     font-weight: bolder;
 }
 
-.publication-authors {
+.title + .publication-authors,
+.subtitle + .publication-authors {
+    margin-top: -1.25rem;
 }
 
 .publication-authors a {

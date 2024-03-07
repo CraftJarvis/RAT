@@ -1,422 +1,534 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <meta name="description"
-        content="RAT: Retrieval Augmented Thoughts Elicit Context-Aware Reasoning in Long-Horizon Generation.">
-  <meta name="keywords" content="LLM, RAG, CoT">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>RAT: Retrieval Augmented Thoughts Elicit Context-Aware Reasoning in Long-Horizon Generation</title>
 
-  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
-        rel="stylesheet">
+  <head>
+    <meta charset="utf-8">
+    <meta name="description" content="RAT: Retrieval Augmented Thoughts Elicit Context-Aware Reasoning in Long-Horizon Generation.">
+    <meta name="keywords" content="LLM, RAG, CoT">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RAT: Retrieval Augmented Thoughts Elicit Context-Aware Reasoning in Long-Horizon Generation</title>
 
-  <link rel="stylesheet" href="./static/css/bulma.min.css">
-  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
-  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
-  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
-  <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
-  <link rel="icon" href="./static/images/logo_v2.png">
-  <link rel="stylesheet" href="./static/css/index.css">
-  <!-- <link rel="icon" href="./static/images/favicon.svg"> -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <link rel="stylesheet" href="index.css">
+    <link rel="icon" href="images/logo.png">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script defer src="./static/js/fontawesome.all.min.js"></script>
-  <script src="./static/js/bulma-carousel.min.js"></script>
-  <script src="./static/js/bulma-slider.min.js"></script>
-  <script src="./static/js/index.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/js/all.min.js"></script>
+    <script type="module" src="https://gradio.s3-us-west-2.amazonaws.com/3.27.0/gradio.js"></script>
+  </head>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YYMVFKS0SP"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-YYMVFKS0SP');
+  </script>
 
   <style>
-    #logo {
-      vertical-align: middle; /* 垂直居中图像 */
-      width: 5%; /* 设置图像宽度，保持原有设置 */
+    .expandable-card .card-text-container {
+      max-height: 200px;
+      overflow-y: hidden;
+      position: relative;
     }
-    
-    .title {
-      display: inline-block; /* 使标题以内联块级元素显示，以便能够应用垂直对齐 */
-      vertical-align: middle; /* 垂直居中文本 */
-      margin: 0; /* 根据需要调整，确保标题与图像垂直居中对齐 */
+
+    .expandable-card.expanded .card-text-container {
+      max-height: none;
+    }
+
+    .expand-btn {
+      position: relative;
+      display: none;
+      background-color: rgba(255, 255, 255, 0.8);
+      /* margin-top: -20px; */
+      /* justify-content: center; */
+      color: #510c75;
+      border-color: transparent;
+    }
+
+    .expand-btn:hover {
+      background-color: rgba(200, 200, 200, 0.8);
+      text-decoration: none;
+      border-color: transparent;
+      color: #510c75;
+    }
+
+    .expand-btn:focus {
+      outline: none;
+      text-decoration: none;
+    }
+
+    .expandable-card:not(.expanded) .card-text-container:after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 90px;
+      background: linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 1));
+    }
+
+    .expandable-card:not(.expanded) .expand-btn {
+      margin-top: -40px;
+    }
+
+    .card-body {
+      padding-bottom: 5px;
+    }
+
+    .vertical-flex-layout {
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .figure-img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .adjustable-font-size {
+      font-size: calc(0.5rem + 2vw);
+    }
+
+    .chat-history {
+      flex-grow: 1;
+      overflow-y: auto;
+      /* overflow-x: hidden; */
+      padding: 5px;
+      border-bottom: 1px solid #ccc;
+      margin-bottom: 10px;
+    }
+
+    #gradio pre {
+      background-color: transparent;
     }
   </style>
 
-</head>
+  <body>
 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-YYMVFKS0SP"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-YYMVFKS0SP');
-</script>
-
-<body>
-
-<section class="hero">
-  <div class="hero-body">
-    <div class="container is-max-desktop">
-      <div class="columns is-centered">
-        <div class="column has-text-centered">
-          <h1 class="title is-1 publication-title"><img id="logo" width="10%" src="./static/images/logo.png"> RAT</h1>
-          <h1 class="title is-2 publication-title">Retrieval Augmented Thoughts Elicit Context-Aware Reasoning in Long-Horizon Generation</h1>
-          <div class="is-size-5 publication-authors">
-            <span class="author-block">
-              <a href="https://zhwang4ai.github.io" target="_blank">Zihao Wang</a><sup>1</sup>,</span>
-            <span class="author-block">
-              <a href="https://liuanji.github.io/" target="_blank">Anji Liu</a><sup>2</sup>,</span>
-            <span class="author-block">
-              <a href="https://linhaowei1.github.io/" target="_blank">Haowei Lin</a><sup>1</sup>,
-            </span>
-            <span class="author-block">
-              <a href="http://" target="_blank">Jiaqi Li</a><sup>3</sup>,
-            </span>
-            <span class="author-block">
-              <a href="https://jeasinema.github.io/" target="_blank">Xiaojian Ma</a><sup>3</sup>,
-            </span>
-            <span class="author-block">
-              <a href="https://scholar.google.com/citations?user=KVzR1XEAAAAJ&hl=zh-CN&oi=ao" target="_blank">Yitao Liang</a><sup>1</sup>,
-            </span>
-          </div>
-
-          <div class="is-size-5 publication-authors">
-            <span class="author-block"><sup>1</sup>Peking University,</span>
-            <span class="author-block"><sup>2</sup>University of California, Los Angeles</span>
-            <span class="author-block"><sup>3</sup>Beijing Institute for General Artificial Intelligence</span>
-          </div>
-
-          <div class="column has-text-centered">
-            <div class="publication-links">
-              <!-- PDF Link. -->
-              <span class="link-block">
-                <a href="https://arxiv.org/pdf/" target="_blank"
-                   class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                      <i class="fas fa-file-pdf"></i>
+    <section class="hero">
+      <div class="hero-body">
+        <div class="container is-max-desktop">
+          <div class="columns is-centered">
+            <div class="column has-text-centered">
+              <h1 class="title is-1 publication-title"><img id="logo" width="10%" src="./static/images/logo.png"> RAT</h1>
+              <h1 class="title is-2 publication-title">Retrieval Augmented Thoughts Elicit Context-Aware Reasoning in Long-Horizon Generation</h1>
+              <div class="is-size-5 publication-authors">
+                <span class="author-block">
+                  <a href="https://zhwang4ai.github.io" target="_blank">Zihao Wang</a><sup>1</sup>,</span>
+                <span class="author-block">
+                  <a href="https://liuanji.github.io/" target="_blank">Anji Liu</a><sup>2</sup>,</span>
+                <span class="author-block">
+                  <a href="https://linhaowei1.github.io/" target="_blank">Haowei Lin</a><sup>1</sup>,
+                </span>
+                <span class="author-block">
+                  <a href="http://" target="_blank">Jiaqi Li</a><sup>3</sup>,
+                </span>
+                <span class="author-block">
+                  <a href="https://jeasinema.github.io/" target="_blank">Xiaojian Ma</a><sup>3</sup>,
+                </span>
+                <span class="author-block">
+                  <a href="https://scholar.google.com/citations?user=KVzR1XEAAAAJ&hl=zh-CN&oi=ao" target="_blank">Yitao Liang</a><sup>1</sup>,
+                </span>
+              </div>
+    
+              <div class="is-size-5 publication-authors">
+                <span class="author-block"><sup>1</sup>Peking University,</span>
+                <span class="author-block"><sup>2</sup>University of California, Los Angeles</span>
+                <span class="author-block"><sup>3</sup>Beijing Institute for General Artificial Intelligence</span>
+              </div>
+    
+              <div class="column has-text-centered">
+                <div class="publication-links">
+                  <!-- PDF Link. -->
+                  <span class="link-block">
+                    <a href="https://arxiv.org/pdf/" target="_blank"
+                       class="external-link button is-normal is-rounded is-dark">
+                      <span class="icon">
+                          <i class="fas fa-file-pdf"></i>
+                      </span>
+                      <span>Paper</span>
+                    </a>
                   </span>
-                  <span>Paper</span>
-                </a>
-              </span>
-              <span class="link-block">
-                <a href="https://arxiv.org/abs/" target="_blank"
-                   class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                      <i class="ai ai-arxiv"></i>
+                  <span class="link-block">
+                    <a href="https://arxiv.org/abs/" target="_blank"
+                       class="external-link button is-normal is-rounded is-dark">
+                      <span class="icon">
+                          <i class="ai ai-arxiv"></i>
+                      </span>
+                      <span>arXiv</span>
+                    </a>
                   </span>
-                  <span>arXiv</span>
-                </a>
-              </span>
-              <!-- Video Link. -->
-              <!-- <span class="link-block">
-                <a href="https://www.youtube.com/watch?v=MrKrnHhk8IA" target="_blank"
-                   class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                      <i class="fab fa-youtube"></i>
+                  <!-- Video Link. -->
+                  <!-- <span class="link-block">
+                    <a href="https://www.youtube.com/watch?v=MrKrnHhk8IA" target="_blank"
+                       class="external-link button is-normal is-rounded is-dark">
+                      <span class="icon">
+                          <i class="fab fa-youtube"></i>
+                      </span>
+                      <span>Video</span>
+                    </a>
+                  </span> -->
+                  <!-- Code Link. -->
+                  <span class="link-block">
+                    <a href="https://github.com/CraftJarvis/RAT" target="_blank"
+                       class="external-link button is-normal is-rounded is-dark">
+                      <span class="icon">
+                          <i class="fab fa-github"></i>
+                      </span>
+                      <span>Code</span>
+                      </a>
                   </span>
-                  <span>Video</span>
-                </a>
-              </span> -->
-              <!-- Code Link. -->
-              <span class="link-block">
-                <a href="https://github.com/CraftJarvis/RAT" target="_blank"
-                   class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                      <i class="fab fa-github"></i>
+                  <!-- Demo Link. -->
+                  <span class="link-block">
+                    <a href="https://huggingface.co/spaces/zhwang4ai/RAT" target="_blank"
+                       class="external-link button is-normal is-rounded is-dark">
+                      <span class="icon">
+                          <i class="far fa-images"></i>
+                      </span>
+                      <span>Demo</span>
+                      </a>
                   </span>
-                  <span>Code</span>
-                  </a>
-              </span>
-              <!-- Dataset Link. -->
-              <!-- <span class="link-block">
-                <a href="https://github.com/google/nerfies/releases/tag/0.1" target="_blank"
-                   class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                      <i class="far fa-images"></i>
-                  </span>
-                  <span>Data</span>
-                  </a>
-              </span> -->
-              <!-- Demo Link. -->
-              <span class="link-block">
-                <a href="https://huggingface.co/spaces/zhwang4ai/RAT-demo" target="_blank"
-                   class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                      <i class="far fa-images"></i>
-                  </span>
-                  <span>Demo</span>
-                  </a>
-              </span>
+                </div>
+    
+              </div>
             </div>
-
           </div>
         </div>
       </div>
-    </div>
-  </div>
-</section>
+    </section>
 
-<!-- <section class="hero teaser">
-  <div class="container is-max-desktop">
-    <div class="hero-body">
-      <font size=4>
-      <table width="100%" align="center" border="0" cellspacing="0" cellpadding="20"><tbody>
-        <tr>
-          <td>
-            <heading>🔥<b>What's New</b></heading>
-            <div style="height: 80px; overflow: auto;">
-              <ul> 
-                <li> [2024.3.7] The <b>code</b> of open-ended creative writing are available!
-                <li> [2024.3.6] The <b>paper</b> and <b>project</b> page are released!
-              </ul>
+    <section class="section">
+      <div class="container is-max-desktop">
+        <!-- Abstract. -->
+        <div class="columns is-centered has-text-centered">
+          <div class="column is-four-fifths">
+            <h2 class="title is-3">Abstract</h2>
+            <div class="content has-text-justified">
+              <p>
+                We explore how iterative revising a chain of thoughts with the help of information retrieval significantly improves large language models' reasoning and generation ability in long-horizon generation tasks, while hugely mitigating hallucination. In particular, the proposed method — retrieval-augmented thoughts (RAT) — revises each thought step one by one with retrieved information relevant to the task query, the current and the past thought steps, after the initial zero-shot CoT is generated. 
+              </p>
+              <p>
+                Applying RAT to various base models substantially improves their performances on various long-horizon generation tasks; on average of relatively increasing rating scores by 13.63% on code generation, 16.96% on mathematical reasoning, 19.2% on creative writing, and 42.78% on embodied task planning.
+              </p>
             </div>
-          </td>
-        </tr>
-      </tbody></table>
-      <br>
-      </font>
-    </div>
-  </div>
-</section> -->
+          </div>
+        </div>
+        <!--/ Abstract. -->
+    
+        <!-- Paper video. -->
+        <!-- <div class="columns is-centered has-text-centered">
+          <div class="column is-four-fifths">
+            <h2 class="title is-3">Video</h2>
+            <div class="publication-video">
+              <iframe src="https://www.youtube.com/embed/MrKrnHhk8IA?rel=0&amp;showinfo=0"
+                      frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            </div>
+          </div>
+        </div> -->
+        <!--/ Paper video. -->
+      </div>
+    </section>
 
-<!-- <section class="hero teaser">
-  <div class="container is-max-desktop">
-    <div class="hero-body">
-      <video id="teaser" autoplay muted loop playsinline height="100%">
-        <source src="./static/videos/teaser.mp4"
-                type="video/mp4">
-      </video>
-      <h2 class="subtitle has-text-centered">
-        <span class="dnerf">Nerfies</span> turns selfie videos from your phone into
-        free-viewpoint
-        portraits.
-      </h2>
-    </div>
-  </div>
-</section> -->
-
-
-<!-- <section class="hero is-light is-small">
-  <div class="hero-body">
-    <div class="container">
-      <div id="results-carousel" class="carousel results-carousel">
-        <div class="item item-steve">
-          <video poster="" id="steve" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/steve.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-chair-tp">
-          <video poster="" id="chair-tp" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/chair-tp.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-shiba">
-          <video poster="" id="shiba" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/shiba.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-fullbody">
-          <video poster="" id="fullbody" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/fullbody.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-blueshirt">
-          <video poster="" id="blueshirt" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/blueshirt.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-mask">
-          <video poster="" id="mask" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/mask.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-coffee">
-          <video poster="" id="coffee" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/coffee.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-toby">
-          <video poster="" id="toby" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/toby2.mp4"
-                    type="video/mp4">
-          </video>
+    <section class="section" id="Introduction" style="background-color:#efeff081">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column is-full-width">
+            <!-- <font color="#224baf" size=4><b> -->
+            <div class="content has-text-justified">
+              <p>
+                <!-- We delineate the process of utilizing the seed captions to train a general captioner (Share-Captioner)
+                and then employing this captioner to generate <b>1.2M high-quality captions</b> for pre-training usage. -->
+                <centering>
+                  <div style="text-align: center;">
+                    <img id="teaser" width="100%" src="./static/images/teaser.png">     
+                  </div>
+                </centering>
+                <li>Top: An example of different LLM reasoning methods on creative generation tasks. <font color="red">Red</font> text indicates errors or illusions in the text generated by LLM, while <font color="green">green</font> text represents correct generation. Methods without RAG often generate incorrect information with hallucination, classical RAG is highly related to retrieved content with a loose structure, and RAT-generated texts perform best in terms of accuracy and completeness.
+                <li>Bottom: The quantitative performance comparison for different LLM reasoning methods on complex embodied planning, mathematical reasoning, code generation, and creative generation tasks. Our RAT outperforms all the baselines on all tasks.
+              </p>
+            </div>
+            <!-- </b></font> -->
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-</section> -->
+    </section>
 
-
-<section class="section">
-  <div class="container is-max-desktop">
-    <!-- Abstract. -->
-    <div class="columns is-centered has-text-centered">
-      <div class="column is-four-fifths">
-        <h2 class="title is-3">Abstract</h2>
-        <div class="content has-text-justified">
-          <p>
-            We explore how iterative revising a chain of thoughts with the help of information retrieval significantly improves large language models' reasoning and generation ability in long-horizon generation tasks, while hugely mitigating hallucination. In particular, the proposed method — retrieval-augmented thoughts (RAT) — revises each thought step one by one with retrieved information relevant to the task query, the current and the past thought steps, after the initial zero-shot CoT is generated. 
-          </p>
-          <p>
-            Applying RAT to various base models substantially improves their performances on various long-horizon generation tasks; on average of relatively increasing rating scores by 13.63% on code generation, 16.96% on mathematical reasoning, 19.2% on creative writing, and 42.78% on embodied task planning.
-          </p>
+    <section class="section" id="Pipeline">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-six-fifths">
+          <h2 class="title is-3">Pipeline</h2>
         </div>
       </div>
-    </div>
-    <!--/ Abstract. -->
-
-    <!-- Paper video. -->
-    <!-- <div class="columns is-centered has-text-centered">
-      <div class="column is-four-fifths">
-        <h2 class="title is-3">Video</h2>
-        <div class="publication-video">
-          <iframe src="https://www.youtube.com/embed/MrKrnHhk8IA?rel=0&amp;showinfo=0"
-                  frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-        </div>
-      </div>
-    </div> -->
-    <!--/ Paper video. -->
-  </div>
-</section>
-
-
-<section class="section" id="Introduction" style="background-color:#efeff081">
-  <div class="container is-max-desktop">
-    <div class="columns is-centered">
-      <div class="column is-full-width">
-        <!-- <font color="#224baf" size=4><b> -->
-        <div class="content has-text-justified">
-          <p>
-            <!-- We delineate the process of utilizing the seed captions to train a general captioner (Share-Captioner)
-            and then employing this captioner to generate <b>1.2M high-quality captions</b> for pre-training usage. -->
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column is-full-width">
+            <!-- <font color="#224baf" size=4><b> -->
             <centering>
               <div style="text-align: center;">
-                <img id="teaser" width="100%" src="./static/images/teaser.png">     
+                <img id="teaser" width="90%" src="static/images/pipeline.png">     
               </div>
             </centering>
-            <li>Top: An example of different LLM reasoning methods on creative generation tasks. <font color="red">Red</font> text indicates errors or illusions in the text generated by LLM, while <font color="green">green</font> text represents correct generation. Methods without RAG often generate incorrect information with hallucination, classical RAG is highly related to retrieved content with a loose structure, and RAT-generated texts perform best in terms of accuracy and completeness.
-            <li>Bottom: The quantitative performance comparison for different LLM reasoning methods on complex embodied planning, mathematical reasoning, code generation, and creative generation tasks. Our RAT outperforms all the baselines on all tasks.
-          </p>
-        </div>
-        <!-- </b></font> -->
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="section" id="Pipeline">
-  <div class="columns is-centered has-text-centered">
-    <div class="column is-six-fifths">
-      <h2 class="title is-3">Pipeline</h2>
-    </div>
-  </div>
-  <div class="container is-max-desktop">
-    <div class="columns is-centered">
-      <div class="column is-full-width">
-        <!-- <font color="#224baf" size=4><b> -->
-        <centering>
-          <div style="text-align: center;">
-            <img id="teaser" width="90%" src="static/images/pipeline.png">     
+            <p>
+              Given a task prompt, RAT starts from initial step-by-step thoughts produced by an LLM in zero-shot ("let's think step by step"). Some thought steps may be flawed due to hallucination. RAT interatively revise each thought step using RAG from an external knowledge base (denoted as Library or Internet).<br>
+              The detailed algorithm is as follows:
+            </p>
+            <br>
+            <centering>
+              <div style="text-align: center;">
+                <img id="teaser" width="80%" src="static/images/algorithm.png">     
+              </div>
+            </centering>
+            </b>
+          <!-- </font>            -->
           </div>
-        </centering>
+        </div>
+      </div>
+    </section>
+    
+    <section class="section" id="Results" style="background-color:#efeff081">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-six-fifths">
+          <h2 class="title is-3">Results</h2>
+        </div>
+      </div>
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column is-full-width">
+            <!-- <font color="#224baf" size=4><b> -->
+            <div class="content has-text-justified">
+              <p>
+                <centering>
+                  <div style="text-align: center;">
+                    <img id="teaser" width="100%" src="./static/images/results.png">     
+                  </div>
+                </centering>
+                Evaluation results on code generation mathematical reasoning, creative writing, and embodied planning tasks. 
+                We compare RAT with DIRECT, RAG(1-shot), RAG(5-shot) and Zero-shot CoT. 
+                Δ represents the relative improvements than DIRECT.
+              </p>
+            </div>
+            <!-- </b></font> -->
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <section class="section" id="examples">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-six-fifths">
+          <h2 class="title is-3">Conversation Examples</h2>
+        </div>
+      </div>
+      <div class="container mt-5">
+        <div class="form-row" style="justify-content: flex-end;">
+          <div class="form-group col-md-1">
+            <div class="col-md-2" style="width: 100%"><label>&nbsp;</label></div>
+            <div class="btn-group" role="group" aria-label="Left and Right Controller"
+              style="width: 100%;align-items: flex-end;justify-content: center;flex-direction: row;display: flex;">
+              <button type="button" class="form-control btn btn-primary" id="prev-question"><i class="material-icons">keyboard_arrow_left</i></button>
+              <button type="button" class="form-control btn btn-primary" id="next-question"><i class="material-icons">keyboard_arrow_right</i></button>
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <div class="card mb-4" style="width: 100%; display: flex; align-items: center;">
+            <div class="card-body" id="selected-question" style="display: flex; height: 80vh;">
+              <div class="chat-history">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <section class="section" style="background-color:#efeff081" id="demo">
+      <div class="container is-max-desktop" id="gradio">
+        <h2 class="title">Gradio Apps</h2>
         <p>
-          Given a task prompt, RAT starts from initial step-by-step thoughts produced by an LLM in zero-shot ("let's think step by step"). Some thought steps may be flawed due to hallucination. RAT interatively revise each thought step using RAG from an external knowledge base (denoted as Library or Internet).<br>
-          The detailed algorithm is as follows:
+          Coming soon ...
         </p>
-        <br>
-        <centering>
-          <div style="text-align: center;">
-            <img id="teaser" width="80%" src="static/images/algorithm.png">     
+        <!-- <gradio-app src=""></gradio-app>  -->
+      </div>
+    </section>
+    
+    <section class="section" id="BibTeX">
+      <div class="container is-max-desktop content">
+        <h2 class="title">BibTeX</h2>
+        <pre><code>@article{wang2024rat,
+      author    = {Zihao, Wang and Anji, Liu and Haowei, Lin and Jiaqi, Li and Xiaojian, Ma and Yitao, Liang},
+      title     = {RAT: Retrieval Augmented Thoughts Elicit Context-Aware Reasoning in Long-Horizon Generation},
+      journal   = {arXiv},
+      year      = {2024},
+    }</code></pre>
+      </div>
+    </section>
+
+    <script>
+      // Handle message showing
+      function createChatRow(sender, text, imageSrc) {
+        var article = document.createElement("article");
+        article.className = "media"
+
+        var figure = document.createElement("figure");
+        figure.className = "media-left";
+
+        var span = document.createElement("span");
+        span.className = "icon is-large";
+
+        var icon = document.createElement("i");
+        var img = document.createElement("img");
+
+        if (sender === "User") {
+          img.src = "static/images/user.png"
+        }
+        else if (sender === "ChatGPT") {
+          img.src = "static/images/chatgpt.png"
+        }
+        else if (sender === "RAT") {
+          img.src = "static/images/logo_v2.png"
+        }
+        else {
+          img.src = "staiic/images/favicon.svg"
+        }
+        icon.appendChild(img);
+
+        var media = document.createElement("div");
+        media.className = "media-content";
+
+        var content = document.createElement("div");
+        content.className = "content";
+
+        var para = document.createElement("p");
+
+        // wrap text in pre tag to preserve whitespace and line breaks
+        var pre_text = document.createElement("pre");
+        pre_text.style = "background-color: white; font-size: 18px; font-family: Arial; padding: 0; margin: 0; white-space: pre-wrap; word-wrap: break-word;";
+        var paraText = document.createTextNode(text);
+        pre_text.appendChild(paraText);
+
+        var strong = document.createElement("strong");
+        strong.innerHTML = sender;
+        var br = document.createElement("br");
+
+        para.appendChild(strong);
+        para.appendChild(br);
+        para.appendChild(pre_text);
+
+        if (imageSrc) {
+          var img = document.createElement("img");
+          img.src = imageSrc;
+          img.style = "max-width: 100%; max-height: 300px;"; // Adjust the style as needed
+          para.appendChild(img);
+        }
+
+        content.appendChild(para);
+        media.appendChild(content);
+        span.appendChild(icon);
+        figure.appendChild(span);
+        if (sender !== "Description") {
+          article.appendChild(figure);
+        };
+        article.appendChild(media);
+        return article;
+      }
+
+      function addMessageToChatHistory(sender, message, imageSrc) {
+        const chatHistory = document.querySelector('.chat-history');
+        const chatRow = createChatRow(sender, message, imageSrc);
+        chatHistory.appendChild(chatRow);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+      }
+
+      function clearChatHistory() {
+        const chatHistory = document.querySelector('.chat-history');
+        chatHistory.innerHTML = "";
+      }
+
+      const conversations = [
+      {
+        "description": "Bio Generation",
+        "turns": [
+          ["User", "Introduce Yitao Liang to me. He is an Assistant Professor in Peking University and graduate from UCLA."],
+          ["ChatGPT", "Yitao Liang is an Assistant Professor at Peking University. He graduated from the University of California, Los Angeles (UCLA). Yitao Liang's academic background and experience have led him to his current position at one of China's prestigious universities. His education at UCLA likely provided him with a strong foundation in his field, enabling him to pursue a career in academia at Peking University. This transition from student to Assistant Professor signifies his dedication to research and teaching in his chosen field."],
+          ["RAT",
+            "Yitao Liang is an Assistant Professor at Peking University. He obtained his academic qualifications from the University of California, Los Angeles (UCLA), where he likely honed his expertise in his field. This educational background at UCLA has played a pivotal role in shaping Liang's career and preparing him for his current role as an Assistant Professor at one of China's prestigious educational institutions—Peking University." +
+            "\n\nThe transition from being a student at UCLA to an Assistant Professor at Peking University signifies Liang's dedication to academia and his significant contributions to the field. His journey exemplifies the typical progression of a committed academic, showcasing a seamless integration of knowledge gained from UCLA into his role at Peking University. Through this trajectory, Yitao Liang underscores his commitment to research and education, embodying the essence of continuous growth and professional development within the academic realm." +
+            "\n\nYitao Liang's academic trajectory, marked by his transition from UCLA to an Assistant Professorship at Peking University, demonstrates the global exchange of ideas and expertise in the academic sphere. His experience at these renowned institutions not only highlights his academic prowess but also underscores the interconnected nature of academia, where individuals like Yitao Liang contribute significantly to the enriching environment of institutions like Peking University. His background and achievements underscore the collaborative and progressive spirit that characterizes modern academia."
+          ]
+        ]
+      },
+      {
+        "description": "Introduction",
+        "turns": [
+          ["User", "Introduce World War II."],
+          ["ChatGPT", "Many significant events occurred during World War II. Firstly, the war broke out on September 1, 1939, when Nazi Germany invaded Poland. The war involved all the world's great powers, forming two opposing military alliances: the Allies and the Axis.\n\nDuring the war, Germany launched Blitzkrieg campaigns, capturing many countries such as France, Norway, the Netherlands, and Belgium. Japan also expanded its influence in East Asia and the Pacific region.\n\nThe Allies consisted of the United States, the Soviet Union, the United Kingdom, and other countries, uniting to resist the Axis. The Soviet Union played a key role on the Eastern Front, where Germany invaded the Soviet Union in Operation Barbarossa but was ultimately defeated in the Battle of Stalingrad.\n\nThe United States joined the war after the Pearl Harbor attack, becoming a key force among the Allies. The Allied forces achieved victories in Africa, Italy, and Western Europe, eventually ending the war in Europe in 1945.\n\nThe Pacific theater continued until 1945. The United States conducted several naval battles, including the Battle of Midway and the Battle of Guadalcanal, ultimately leading to Japan's surrender in September 1945 after the atomic bombings of Hiroshima and Nagasaki, marking the end of World War II."],
+          ["RAT",
+            "### The Outbreak of World War II\nDuring World War II, a pivotal era unfolded with significant events that shaped the course of history. It commenced on September 1, 1939, when Nazi Germany invaded Poland, triggering a global conflict that drew major powers into opposing alliances—the Allies and the Axis. This conflict escalated as nations formed alliances, leading to a series of intense battles and campaigns across various theaters of war.\n\n### The Formation of the Allies and the Axis\nThe Allies, consisting of nations such as the United States, Great Britain, and the Soviet Union, united to counter the aggressive expansion of the Axis powers, notably Germany, Japan, and Italy. The war further intensified as the Axis powers sought to advance their domination, prompting a worldwide struggle for supremacy.\n\n### Strategies and Occupations by the Axis Powers\nDuring the war, Germany conducted lightning warfare, occupying many countries such as France, Norway, the Netherlands, and Belgium. Japan also expanded its influence in East Asia and the Pacific region through military aggression. The conflict brought devastation to regions across the globe and led to significant shifts in power dynamics.\n\n### The Aftermath and Emergence of the Cold War\nThe conclusion of World War II marked a transformative period in global history. The dissolution of the Grand Alliance following Roosevelt's passing in April 1945 and the leadership transition to Harry S. Truman set the stage for a new era defined by the emerging Cold War tensions. The Yalta Conference in February 1945 and subsequent conferences reflected the complex relationships among the Allied leaders as they navigated differing strategic visions and post-war arrangements. Stalin's territorial demands and influence in Eastern Europe raised concerns among Western leaders, foreshadowing the geopolitical challenges that would shape the post-war world order. These events culminated in the onset of the Cold War, ushering in an era of ideological confrontation and global power struggles that would define international relations for decades to come."
+          ]
+        ]
+      },
+      ];
+
+      let currentIndex = 0;
+
+      function update_dialog_demo() {
+        clearChatHistory();
+
+        for (let i = 0; i < conversations[currentIndex].turns.length; i++) {
+          if (conversations[currentIndex].turns[i].length == 2) {
+            addMessageToChatHistory(conversations[currentIndex].turns[i][0], conversations[currentIndex].turns[i][1]);
+          }
+          else {
+            addMessageToChatHistory(conversations[currentIndex].turns[i][0], conversations[currentIndex].turns[i][1], conversations[currentIndex].turns[i][2]);
+          }
+        }
+
+        document.querySelector('.chat-history').scrollTop = 0;
+      }
+
+      // Initialize the displayed image
+      update_dialog_demo();
+
+      // Event listeners for the buttons
+      document.getElementById('prev-question').addEventListener('click', () => {
+        currentIndex = (currentIndex - 1 + conversations.length) % conversations.length;
+        update_dialog_demo();
+      });
+
+      document.getElementById('next-question').addEventListener('click', () => {
+        currentIndex = (currentIndex + 1) % conversations.length;
+        update_dialog_demo();
+      });
+    </script>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="columns is-centered">
+          <div class="column is-8">
+            <div class="content">
+              <p>
+                This website is adapted from <a target="_blank"
+                href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>, with <a rel="license" target="_blank"
+                href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
+              </p>
+            </div>
           </div>
-        </centering>
-        </b>
-      <!-- </font>            -->
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="section" id="Results" style="background-color:#efeff081">
-  <div class="container is-max-desktop">
-    <div class="columns is-centered">
-      <div class="column is-full-width">
-        <!-- <font color="#224baf" size=4><b> -->
-        <div class="content has-text-justified">
-          <p>
-            <!-- We delineate the process of utilizing the seed captions to train a general captioner (Share-Captioner)
-            and then employing this captioner to generate <b>1.2M high-quality captions</b> for pre-training usage. -->
-            <centering>
-              <div style="text-align: center;">
-                <img id="teaser" width="100%" src="./static/images/results.png">     
-              </div>
-            </centering>
-            Evaluation results on code generation mathematical reasoning, creative writing, and embodied planning tasks. 
-            We compare RAT with DIRECT, RAG(1-shot), RAG(5-shot) and Zero-shot CoT. 
-            Δ represents the relative improvements than DIRECT.
-          </p>
-        </div>
-        <!-- </b></font> -->
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="section" id="BibTeX">
-  <div class="container is-max-desktop content">
-    <h2 class="title">BibTeX</h2>
-    <pre><code>@article{wang2024rat,
-  author    = {Zihao, Wang and Anji, Liu and Haowei, Lin and Jiaqi, Li and Xiaojian, Ma and Yitao, Liang},
-  title     = {RAT: Retrieval Augmented Thoughts Elicit Context-Aware Reasoning in Long-Horizon Generation},
-  journal   = {arXiv},
-  year      = {2024},
-}</code></pre>
-  </div>
-</section>
-
-
-<footer class="footer">
-  <div class="container">
-    <!-- <div class="content has-text-centered">
-      <a class="icon-link" target="_blank"
-         href="./static/videos/nerfies_paper.pdf">
-        <i class="fas fa-file-pdf"></i>
-      </a>
-      <a class="icon-link" href="https://github.com/keunhong" target="_blank" class="external-link" disabled>
-        <i class="fab fa-github"></i>
-      </a>
-    </div> -->
-    <div class="columns is-centered">
-      <div class="column is-8">
-        <div class="content">
-          <p>
-            This website is adapted from <a target="_blank"
-            href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>, with <a rel="license" target="_blank"
-            href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
-          </p>
-          <!-- <p>
-            This website is licensed under a <a rel="license" target="_blank"
-                                                href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
-            Commons Attribution-ShareAlike 4.0 International License</a>.
-          </p>
-          <p>
-            This means you are free to borrow the <a target="_blank"
-              href="https://github.com/nerfies/nerfies.github.io">source code</a> of this website,
-            we just ask that you link back to this page in the footer.
-            Please remember to remove the analytics code included in the header of the website which
-            you do not want on your website.
-          </p> -->
         </div>
       </div>
-    </div>
-  </div>
-</footer>
+    </footer>
+  
+  </body>
 
-</body>
 </html>
