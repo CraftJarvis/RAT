@@ -3,3 +3,6 @@ openai
 langchain
 tiktoken
 html2text
+google-api-python-client>=2.100.0
+IPython
+beautifulsoup4
